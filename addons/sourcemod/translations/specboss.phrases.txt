@@ -1,0 +1,14 @@
+"Phrases"
+{
+    "Tag"
+    {
+        "ru"    "{C}FF2E63[SpecBoss]{C}EAEAEA"
+        "en"    "{C}FF2E63[SpecBoss]{C}EAEAEA"
+    }
+    "Spec availbale"
+    {
+        "ru"    "Доступно наблюдение за боссом через {C}08D9D6!boss"
+        "en"    "Boss spectating is available via {C}08D9D6!boss"
+    }
+
+}
