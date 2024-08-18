@@ -15,7 +15,7 @@ public void OnClientPutInServer(int client)
         return;
 
     #if defined COOKIE
-    if(AreClientCookiesCached(client))
+    if(ClientCookiesCached(client))
         ReadClientCookies(client);
     #endif
 }
@@ -33,9 +33,6 @@ bool SpectateClientBoss(int client, int specEntity)
 {
     if(Clients[client].Spectating)
         return true;
-
-    if(GetClientTeam(client) == 3 && IsPlayerAlive(client))
-        return false;
 
     SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDEHUD_PLAYERDEATH);
     SetClientViewEntity(client, specEntity);
