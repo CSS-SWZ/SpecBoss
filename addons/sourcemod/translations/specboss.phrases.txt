@@ -10,5 +10,35 @@
         "ru"    "Доступно наблюдение за боссом через {C}08D9D6!boss"
         "en"    "Boss spectating is available via {C}08D9D6!boss"
     }
+    "Humans cant use"
+    {
+        "ru"    "Выжившие не могут использовать эту команду"
+        "en"    "Humans cant use this command"
+    }
+    "No config"
+    {
+        "ru"    "Настройки для этой карты нет"
+        "en"    "There is no setting for this map"
 
+    }
+    "No currentboss"
+    {
+        "ru"    "Сейчас не за кем наблюдать"
+        "en"    "Theres no one to spectate right now"
+    }
+    "Specboss on"
+    {
+        "ru"    "Включено наблюдение за боссом. Отключить можно через {C}08D9D6!boss"
+        "en"    "Boss spectating enabled. To disable it, type {C}08D9D6!boss"
+    }
+    "Specboss off"
+    {
+        "ru"    "Наблюдение за боссом отключено"
+        "en"    "Boss spectating disabled"
+    }
+    "Only specs"
+    {
+        "ru"    "Наблюдение за боссом доступно только для наблюдателей"
+        "en"    "Boss spectating is only available to spectators"
+    }
 }
