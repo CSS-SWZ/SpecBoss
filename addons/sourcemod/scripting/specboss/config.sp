@@ -1,3 +1,6 @@
+#define FLAG_SPECTATORS_ONLY (1 << 0)
+#define FLAG_HUMANS_CAN_USE (1 << 1)
+
 enum struct Config
 {
     int StartEntityRef;
@@ -15,10 +18,18 @@ enum struct Config
     int SpecEntityRef;
     int SpecEntityHammerID;
     char SpecEntityTargetname[64];
+
+    bool Alert;
+    int Flags;
 }
 
 int ConfigsCount;
 Config Configs[MAX_BOSSES_CONFIGS];
+
+void ConfigOnMapStart()
+{
+    LoadConfig();
+}
 
 void ConfigOnMapEnd()
 {
@@ -42,6 +53,9 @@ void LoadConfig()
         return;
     }
 
+    int alert = kv.GetNum("alert", 1);
+    int flags = kv.GetNum("flags", 0);
+
     char start[256];
     char end[256];
     char spec[64];
@@ -60,7 +74,9 @@ void LoadConfig()
         if(!ParseSpecString(spec))
             continue;
 
-        ConfigsCount++;
+        Configs[ConfigsCount].Alert = !!(kv.GetNum("alert", alert));
+        Configs[ConfigsCount].Flags = kv.GetNum("flags", flags);
+        ++ConfigsCount;
     }
     while(kv.GotoNextKey() && ConfigsCount < MAX_BOSSES_CONFIGS);
 
@@ -171,26 +187,38 @@ stock int GetConfigBySpecEntity(int entity)
 
 int FindConfigByStartEntity(int entity)
 {
-    int hammerid = GetEntProp(entity, Prop_Data, "m_iHammerID");
-
-    if(hammerid)
-    {
-        for(int i = 0; i < ConfigsCount; i++)
-        {
-            if(Configs[i].StartEntityHammerID == hammerid)
-                return i;
-        }
-    }
-
     char targetname[64];
     GetEntPropString(entity, Prop_Data, "m_iName", targetname, sizeof(targetname));
 
     if(targetname[0])
     {
+        int symbol = FindCharInString(targetname, '&');
+
+        if(symbol > 0)
+            targetname[symbol] = 0;
+
         for(int i = 0; i < ConfigsCount; i++)
         {
             if(!strcmp(targetname, Configs[i].StartEntityTargetname, false))
                 return i;
+        }
+     }
+
+     
+    int hammerid = GetEntProp(entity, Prop_Data, "m_iHammerID");
+
+    switch(hammerid)
+    {
+        case 0: return -1;
+
+        default:
+        {
+            for(int i = 0; i < ConfigsCount; i++)
+            {
+                if(Configs[i].StartEntityHammerID == hammerid)
+                    return i;
+            }
+
         }
     }
 
@@ -199,26 +227,38 @@ int FindConfigByStartEntity(int entity)
 
 int FindConfigByEndEntity(int entity)
 {
-    int hammerid = GetEntProp(entity, Prop_Data, "m_iHammerID");
-
-    if(hammerid)
-    {
-        for(int i = 0; i < ConfigsCount; i++)
-        {
-            if(Configs[i].EndEntityHammerID == hammerid)
-                return i;
-        }
-    }
-
     char targetname[64];
     GetEntPropString(entity, Prop_Data, "m_iName", targetname, sizeof(targetname));
 
     if(targetname[0])
     {
+        int symbol = FindCharInString(targetname, '&');
+
+        if(symbol > 0)
+            targetname[symbol] = 0;
+
         for(int i = 0; i < ConfigsCount; i++)
         {
             if(!strcmp(targetname, Configs[i].EndEntityTargetname, false))
                 return i;
+        }
+     }
+
+     
+    int hammerid = GetEntProp(entity, Prop_Data, "m_iHammerID");
+
+    switch(hammerid)
+    {
+        case 0: return -1;
+
+        default:
+        {
+            for(int i = 0; i < ConfigsCount; i++)
+            {
+                if(Configs[i].EndEntityHammerID == hammerid)
+                    return i;
+            }
+
         }
     }
 
@@ -227,30 +267,97 @@ int FindConfigByEndEntity(int entity)
 
 int FindConfigBySpecEntity(int entity)
 {
-    int hammerid = GetEntProp(entity, Prop_Data, "m_iHammerID");
-
-    if(hammerid)
-    {
-        for(int i = 0; i < ConfigsCount; i++)
-        {
-            if(Configs[i].SpecEntityHammerID == hammerid)
-                return i;
-        }
-    }
-
     char targetname[64];
     GetEntPropString(entity, Prop_Data, "m_iName", targetname, sizeof(targetname));
 
     if(targetname[0])
     {
+        int symbol = FindCharInString(targetname, '&');
+
+        if(symbol > 0)
+            targetname[symbol] = 0;
+
         for(int i = 0; i < ConfigsCount; i++)
         {
             if(!strcmp(targetname, Configs[i].SpecEntityTargetname, false))
                 return i;
         }
+     }
+
+     
+    int hammerid = GetEntProp(entity, Prop_Data, "m_iHammerID");
+
+    switch(hammerid)
+    {
+        case 0: return -1;
+
+        default:
+        {
+            for(int i = 0; i < ConfigsCount; i++)
+            {
+                if(Configs[i].SpecEntityHammerID == hammerid)
+                    return i;
+            }
+
+        }
     }
 
     return -1;
+}
+
+bool IsEntityForConfigEnd(int entity, int config)
+{
+    int hammerid = GetEntProp(entity, Prop_Data, "m_iHammerID");
+
+    switch(hammerid)
+    {
+        case 0:
+        {
+            char targetname[64];
+            GetEntPropString(entity, Prop_Data, "m_iName", targetname, sizeof(targetname));
+
+            if(targetname[0] && !strcmp(targetname, Configs[config].EndEntityTargetname, false))
+                return true;
+        }
+
+        default:
+        {
+            if(Configs[config].EndEntityHammerID == hammerid)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+bool IsEntityForConfigSpec(int entity, int config)
+{
+    int hammerid = GetEntProp(entity, Prop_Data, "m_iHammerID");
+
+    switch(hammerid)
+    {
+        case 0:
+        {
+            char targetname[64];
+            GetEntPropString(entity, Prop_Data, "m_iName", targetname, sizeof(targetname));
+
+            if(targetname[0] && !strcmp(targetname, Configs[config].SpecEntityTargetname, false))
+                return true;
+        }
+
+        default:
+        {
+            if(Configs[config].SpecEntityHammerID == hammerid)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+stock bool ConfigIsLoaded()
+{
+    return (ConfigsCount > 0);
 }
 
 void ClearConfigs()
@@ -269,6 +376,9 @@ void ClearConfigs()
 
         Configs[i].SpecEntityHammerID = 0;
         Configs[i].SpecEntityTargetname[0] = 0;
+
+        Configs[i].Alert = true;
+        Configs[i].Flags = 0;
     }
 
     ConfigsCount = 0;
