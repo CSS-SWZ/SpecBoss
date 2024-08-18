@@ -5,9 +5,13 @@
 #include <clientprefs>
 
 Handle AutoSpecCookie;
+ConVar AutoSpecDefValue;
 
 void CookiesInit()
 {
+    AutoSpecDefValue = CreateConVar("sm_specboss_auto_default", "0");
+    AutoExecConfig(true, "plugin.SpecBoss");
+
     AutoSpecCookie = RegClientCookie("AutoSpecBoss", "", CookieAccess_Private);
     SetCookieMenuItem(CookieMenuHandler, 0, "AutoSpecBoss");
 }
@@ -26,7 +30,13 @@ void ReadClientCookies(int client)
     GetClientCookie(client, AutoSpecCookie, value, sizeof(value));
 
     if(value[0])
+    {
         Clients[client].AutoSpectating = !!(StringToInt(value));
+        return;
+    }
+
+    Clients[client].AutoSpectating = AutoSpecDefValue.BoolValue;
+    
 }
 
 public void CookieMenuHandler(int client, CookieMenuAction action, any info, char[] buffer, int maxlen)
@@ -53,10 +63,7 @@ stock void ToggleClientAutoSpec(int client)
 
 stock void AutoSpectateBoss()
 {
-    if(!Configs[CurrentBoss].SpecEntityRef)
-        return;
-
-    int entity = EntRefToEntIndex(Configs[CurrentBoss].SpecEntityRef);
+    int entity = BossGetSpecEntity();
 
     if(entity == INVALID_ENT_REFERENCE)
         return;
@@ -65,7 +72,13 @@ stock void AutoSpectateBoss()
     {
         if(Clients[i].AutoSpectating)
         {
-            SpectateClientBoss(i, entity);
+            if(BossClientCanSpec(i) == CLIENT_SPEC_SUCCESS)
+                SpectateClientBoss(i, entity);
         }
     }
+}
+
+bool ClientCookiesCached(int client)
+{
+    return AreClientCookiesCached(client);
 }
