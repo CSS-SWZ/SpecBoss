@@ -3,9 +3,7 @@
 
 #include <helco>
 
-/*
 #define COOKIE
-*/
 
 #define MAX_BOSSES_CONFIGS 20
 
@@ -13,13 +11,15 @@
 
 #pragma newdecls required
 
+bool Late;
+
+#include "specboss/debug.sp"
 #include "specboss/config.sp"
 #include "specboss/events.sp"
-#include "specboss/boss.sp"
 #include "specboss/client.sp"
+#include "specboss/boss.sp"
 #include "specboss/cookie.sp"
 
-bool Late;
 
 public Plugin myinfo =
 {
@@ -44,7 +44,7 @@ public void OnPluginStart()
 
     BossInit();
     EventsInit();
-
+    
     #if defined COOKIE
     CookiesInit();
     #endif
@@ -71,13 +71,8 @@ public void OnPluginEnd()
 
 public void OnMapStart()
 {
-    LoadConfig();
-
-    if(Late)
-    {
-        Late = false;
-        BossRoundStart();
-    }
+    ConfigOnMapStart();
+    BossOnMapStart();
 }
 
 public void OnMapEnd()
